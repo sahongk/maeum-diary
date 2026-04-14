@@ -1,27 +1,36 @@
 import { useState, useEffect } from "react";
 
 const QUESTIONS_MORNING = [
-  "지금 이 순간, 감사하고 싶은 일은 무엇인가요?",
-  "어떻게 하면 오늘 하루를 더 좋게 보낼 수 있을까요?",
-  "나를 위한 긍정의 한 줄을 써보세요.",
+  "오늘 꼭 하고 싶은 일은 무엇인가요?",
+  "오늘 꼭 해야 할 일은 무엇인가요?",
+  "오늘 일어났으면 하는 멋진 일은 무엇인가요?",
 ];
 const QUESTIONS_EVENING = [
   "오늘 일어난 멋진 일 3가지는 무엇인가요?",
   "무엇을 했더라면 오늘 하루가 더 만족스러웠을까요?",
 ];
+
 const PROVERBS_MORNING = [
-  "작은 시작이 위대한 결실을 만든다.",
-  "오늘 하루도 당신은 충분히 잘하고 있습니다.",
-  "한 걸음씩 나아가는 것이 가장 확실한 길입니다.",
-  "밝은 아침은 밝은 마음에서 시작됩니다.",
-  "당신의 가능성은 아직 다 펼쳐지지 않았습니다.",
+  "천 리 길도 한 걸음부터. — 노자",
+  "오늘 할 수 있는 일에 최선을 다하라. 그것이 내일을 위한 최고의 준비다. — 랄프 왈도 에머슨",
+  "당신이 할 수 있다고 믿든, 할 수 없다고 믿든, 당신의 믿음은 옳다. — 헨리 포드",
+  "성공은 매일 반복되는 작은 노력들의 합이다. — 로버트 콜리어",
+  "꿈을 꾸는 사람은 영원히 젊다. — 요한 볼프강 폰 괴테",
+  "하루를 시작하는 가장 좋은 방법은 감사함으로 눈을 뜨는 것이다. — 달라이 라마",
+  "시작이 반이다. — 아리스토텔레스",
+  "인생은 자전거를 타는 것과 같다. 균형을 유지하려면 계속 움직여야 한다. — 알베르트 아인슈타인",
+  "작은 일에 충실한 자가 큰 일에도 충실하다. — 성경 누가복음 16:10",
+  "기회는 준비된 자에게만 찾아온다. — 루이 파스퇴르",
 ];
+
 const ENCOURAGEMENTS_EVENING = [
-  "오늘 하루도 정말 수고했습니다. 당신은 대단해요!",
-  "완벽하지 않아도 괜찮아요. 오늘도 잘 해냈습니다.",
-  "작은 것에도 감사할 줄 아는 당신, 정말 멋집니다.",
-  "오늘의 당신은 어제보다 조금 더 성장했습니다.",
-  "쉬어가는 것도 용기입니다. 오늘도 충분합니다.",
+  "오늘 하루도 최선을 다한 당신, 정말 대단합니다. — 마음일기",
+  "넘어져도 다시 일어나는 것, 그것이 진정한 강함입니다. — 공자",
+  "오늘의 노력은 반드시 내일의 열매가 됩니다. — 마음일기",
+  "자신을 사랑하는 것이 모든 사랑의 시작입니다. — 오스카 와일드",
+  "하루를 잘 마무리하는 것이 내일을 잘 시작하는 힘입니다. — 마음일기",
+  "고통은 일시적이지만, 포기는 영원합니다. — 랜스 암스트롱",
+  "당신이 오늘 걸은 한 걸음이 모여 위대한 여정이 됩니다. — 마음일기",
 ];
 
 const SEASONS = {
@@ -80,7 +89,6 @@ export default function App() {
     tod === "morning" ? QUESTIONS_MORNING : QUESTIONS_EVENING
   );
 
-  // PWA 설치 배너 감지
   useEffect(() => {
     const handler = (e) => { e.preventDefault(); setInstallPrompt(e); };
     window.addEventListener("beforeinstallprompt", handler);
@@ -128,7 +136,6 @@ export default function App() {
       style={{ fontFamily: "'Noto Sans KR', sans-serif" }}>
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 gap-6">
 
-        {/* 앱 설치 배너 (Android Chrome) */}
         {installPrompt && (
           <div className="w-full max-w-sm bg-white rounded-2xl shadow-md p-4 flex items-center gap-3">
             <span className="text-2xl">📲</span>
@@ -149,8 +156,8 @@ export default function App() {
         </div>
 
         <div className="w-full max-w-sm bg-white/80 backdrop-blur rounded-2xl shadow p-5">
-          <p className="text-xs text-gray-400 font-medium mb-1">
-            {tod === "morning" ? "🌅 오늘의 격언" : "🌙 오늘의 응원"}
+          <p className="text-xs text-gray-400 font-medium mb-2">
+            {tod === "morning" ? "🌅 오늘의 명언" : "🌙 오늘의 응원"}
           </p>
           <p className="text-gray-700 text-sm leading-relaxed italic">"{proverb}"</p>
         </div>
