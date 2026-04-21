@@ -7,13 +7,13 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon-192.png", "icon-512.png"],
+      includeAssets: ["icon-192.png", "icon-512.png", "apple-touch-icon.png"],
       manifest: {
-        name: "마음일기",
-        short_name: "마음일기",
-        description: "매일 나를 돌보는 작은 습관",
+        name: "내맘일기",
+        short_name: "내맘일기",
+        description: "내 마음을 키우는 평생의 친구 — MyHeart Journal",
         theme_color: "#e879a0",
-        background_color: "#fff0f5",
+        background_color: "#fff0f8",
         display: "standalone",
         orientation: "portrait",
         scope: "/",
@@ -27,6 +27,11 @@ export default defineConfig({
           {
             src: "icon-512.png",
             sizes: "512x512",
+            type: "image/png"
+          },
+          {
+            src: "apple-touch-icon.png",
+            sizes: "180x180",
             type: "image/png"
           }
         ]
