@@ -813,76 +813,164 @@ export default function App() {
 // ══════════════════════════════════════════════════════════════════════
 // ── 📸 사진 페이지 (독립 컴포넌트) ─────────────────────────────────────
 // ══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════
+// 📱 플랫폼 감지
+// - capture 속성을 완전히 제거하면 브라우저가 OS의 기본 파일 선택기를 엽니다.
+//   iOS  → "사진 보관함 / 파일" 시트 (사진 앱의 앨범 구조 그대로)
+//   Android → 갤러리 앱 (DCIM, 다운로드, 스크린샷 등 폴더 선택 가능)
+// - accept="image/*" 만 유지하면 두 OS 모두 사진 파일만 필터링합니다.
+// - capture 속성을 넣으면 카메라가 직접 실행되므로 절대 사용하지 않습니다.
+// ══════════════════════════════════════════════════════════════════════
 function PhotoPage({ colors, font, existingPhoto, onSave, onDelete, onSkip }) {
-  const [step, setStep] = useState(existingPhoto ? "preview" : "prompt");
+  const [step,    setStep]    = useState(existingPhoto ? "preview" : "prompt");
   const [preview, setPreview] = useState(existingPhoto || null);
   const [loading, setLoading] = useState(false);
+  const [fileSize, setFileSize] = useState(null); // 압축 후 KB 표시용
 
   async function handleFile(file) {
     if (!file) return;
     setLoading(true);
     const compressed = await compressImage(file);
+    // base64 → 실제 바이트 크기 계산 (표시 전용)
+    const bytes = Math.round((compressed.length * 3) / 4 / 1024);
+    setFileSize(bytes);
     setPreview(compressed);
     setStep("preview");
     setLoading(false);
   }
 
-  // ── 선택 화면
+  // ─────────────────────────────────────────────
+  // 선택 화면
+  // ─────────────────────────────────────────────
   if (step === "prompt") return (
     <div className={`min-h-screen bg-gradient-to-br ${colors.bg} flex flex-col`} style={font}>
       <div className="flex-1 flex flex-col px-6 py-10 gap-5 max-w-md mx-auto w-full">
+
         <div className="flex items-center gap-3 mb-2">
           <button onClick={onSkip} className="text-gray-400 text-sm">← 뒤로</button>
           <h2 className="text-xl font-bold text-gray-800">📸 오늘의 사진</h2>
         </div>
-        <div className="bg-white/80 rounded-2xl p-5 shadow text-center">
-          <div className="text-4xl mb-3">🌅</div>
+
+        <div className="bg-white/80 rounded-2xl p-6 shadow text-center">
+          <div className="text-5xl mb-3">🖼️</div>
           <p className="text-gray-700 text-base font-medium mb-1">오늘 가장 기억하고 싶은 순간을</p>
           <p className="text-gray-700 text-base font-medium mb-4">사진으로 남겨보세요.</p>
-          <p className="text-xs text-gray-400">하루 1장 · 자동 압축 (약 100KB 이하)</p>
+          <div className="text-xs text-gray-400 space-y-1">
+            <p>하루 1장 제한 · 사진 폴더에서 선택</p>
+            <p>자동 압축으로 용량 최소화 (≈ 100KB 이하)</p>
+          </div>
         </div>
+
+        {/* OS별 안내 */}
+        <div className="bg-white/60 rounded-2xl p-4 space-y-2">
+          <p className="text-xs font-semibold text-gray-500 mb-2">📱 사진 폴더 열기 안내</p>
+          <div className="flex items-start gap-2">
+            <span className="text-base">🍎</span>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              <strong>아이폰</strong> — "사진 보관함" 또는 "파일" 중 선택<br/>
+              앨범 탭에서 원하는 앨범을 골라 사진을 선택하세요.
+            </p>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="text-base">🤖</span>
+            <p className="text-xs text-gray-500 leading-relaxed">
+              <strong>안드로이드</strong> — 갤러리 또는 파일 관리자 선택<br/>
+              DCIM · 다운로드 · 스크린샷 등 폴더에서 사진을 고르세요.
+            </p>
+          </div>
+        </div>
+
         <div className="mt-auto space-y-3">
-          <label className="w-full py-4 rounded-2xl text-white font-semibold shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+          {/* ✅ accept="image/*" 만 사용, capture 속성 없음 → 앨범(갤러리) 직접 열림 */}
+          <label
+            className="w-full py-4 rounded-2xl text-white font-semibold shadow-lg flex items-center justify-center gap-2 cursor-pointer active:opacity-80"
             style={{ background: `linear-gradient(135deg,${colors.accent},${colors.accent}cc)` }}>
-            <span>📷 사진 선택하기</span>
-            <input type="file" accept="image/*" capture="environment" className="hidden"
-              onChange={e => handleFile(e.target.files[0])}/>
+            <span style={{ fontSize: 20 }}>🖼️</span>
+            <span>사진 폴더에서 선택하기</span>
+            <input
+              type="file"
+              accept="image/*"
+              /* capture 속성 없음 — iOS/Android 모두 앨범·갤러리로 직행 */
+              className="hidden"
+              onChange={e => handleFile(e.target.files[0])}
+            />
           </label>
-          {loading && <p className="text-center text-xs text-gray-400">압축 중...</p>}
-          <button onClick={onSkip} className="w-full py-2 text-gray-400 text-sm">오늘은 건너뛰기</button>
+
+          {loading && (
+            <div className="flex items-center justify-center gap-2 py-2">
+              <div className="w-4 h-4 rounded-full border-2 border-pink-300 border-t-transparent animate-spin"/>
+              <p className="text-xs text-gray-400">이미지 압축 중...</p>
+            </div>
+          )}
+
+          <button onClick={onSkip} className="w-full py-2 text-gray-400 text-sm">
+            오늘은 건너뛰기
+          </button>
         </div>
+
       </div>
     </div>
   );
 
-  // ── 미리보기 화면
+  // ─────────────────────────────────────────────
+  // 미리보기 화면
+  // ─────────────────────────────────────────────
   if (step === "preview") return (
     <div className={`min-h-screen bg-gradient-to-br ${colors.bg} flex flex-col`} style={font}>
       <div className="flex-1 flex flex-col px-6 py-10 gap-5 max-w-md mx-auto w-full">
+
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => { setPreview(null); setStep("prompt"); }} className="text-gray-400 text-sm">← 다시 선택</button>
+          <button onClick={() => { setPreview(null); setStep("prompt"); }} className="text-gray-400 text-sm">
+            ← 다시 선택
+          </button>
           <h2 className="text-xl font-bold text-gray-800">📸 오늘의 사진</h2>
         </div>
+
+        {/* 사진 미리보기 */}
         <div className="bg-white/80 rounded-2xl shadow overflow-hidden">
           <img src={preview} alt="오늘의 사진" className="w-full object-cover max-h-72"/>
         </div>
-        <p className="text-xs text-gray-400 text-center">✅ 자동 압축 완료 — 저장 용량 최소화</p>
+
+        {/* 압축 결과 표시 */}
+        <div className="flex items-center justify-center gap-1.5">
+          <span className="text-green-500 text-xs">✅</span>
+          <p className="text-xs text-gray-400">
+            자동 압축 완료
+            {fileSize ? ` — 약 ${fileSize}KB` : ""}
+            {" "}· 최대 800px
+          </p>
+        </div>
+
         <div className="mt-auto space-y-3">
-          <button onClick={() => onSave(preview)}
-            className="w-full py-4 rounded-2xl text-white font-semibold shadow-lg"
+          <button
+            onClick={() => onSave(preview)}
+            className="w-full py-4 rounded-2xl text-white font-semibold shadow-lg active:opacity-80"
             style={{ background: colors.accent }}>
             이 사진으로 저장하기 ✓
           </button>
-          <label className="w-full py-3 rounded-2xl border border-gray-200 bg-white/80 text-gray-600 font-medium text-sm flex items-center justify-center gap-2 cursor-pointer">
-            🔄 다른 사진 선택
-            <input type="file" accept="image/*" capture="environment" className="hidden"
-              onChange={e => handleFile(e.target.files[0])}/>
+
+          {/* 다른 사진 선택 — 역시 capture 없음 */}
+          <label className="w-full py-3 rounded-2xl border border-gray-200 bg-white/80 text-gray-600 font-medium text-sm flex items-center justify-center gap-2 cursor-pointer active:bg-gray-50">
+            <span>🔄</span> 다른 사진으로 바꾸기
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={e => handleFile(e.target.files[0])}
+            />
           </label>
+
           {existingPhoto && (
-            <button onClick={onDelete} className="w-full py-2 text-red-400 text-sm">🗑️ 사진 삭제하기</button>
+            <button onClick={onDelete} className="w-full py-2 text-red-400 text-sm">
+              🗑️ 사진 삭제하기
+            </button>
           )}
-          <button onClick={onSkip} className="w-full py-2 text-gray-400 text-sm">건너뛰기</button>
+
+          <button onClick={onSkip} className="w-full py-2 text-gray-400 text-sm">
+            건너뛰기
+          </button>
         </div>
+
       </div>
     </div>
   );
